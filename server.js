@@ -10,6 +10,7 @@ const category = require('./routers/categories.router');
 const upload = require('./routers/upload.router');
 const product = require('./routers/product.route')
 const checkout = require('./routers/checkout.route')
+const payment = require('./routers/payment.route')
 
 const app = express();
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use('/category', category);
 app.use('/images', upload);
 app.use('/products', product);
 app.use('/checkout', checkout);
+app.use('/payment', payment);
 
 
 
