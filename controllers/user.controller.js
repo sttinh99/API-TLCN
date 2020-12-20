@@ -1,14 +1,13 @@
-const Users = require('../models/users.model');
+const User = require('../models/users.model');
 const Checkout = require('../models/checkout.model')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { response } = require('express');
 
 module.exports.register = async (req, res) => {
     //console.log(req.body);
     try {
         const { name, email, password } = req.body;
-        const user = await Users.findOne({ email });
+        const user = await User.findOne({ email });
         if (user) return res.status(400).json({ msg: 'the email already exists' });
         //console.log(password);
         if (password.length < 5)
@@ -16,7 +15,7 @@ module.exports.register = async (req, res) => {
         //encrypt Password
         const passwordHash = await bcrypt.hash(password, 10);
         //sendgrid
-        const newUser = new Users({
+        const newUser = new User({
             name, email, password: passwordHash
         })
         await newUser.save();
@@ -40,7 +39,7 @@ module.exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
         //console.log(req.body, "asdasd");
-        const user = await Users.findOne({ email });
+        const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ msg: "user doesn't exists" });
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Wrong password!!!" });
@@ -57,11 +56,19 @@ module.exports.login = async (req, res) => {
         return res.status(500).json({ msg: error })
     }
 }
+module.exports.getAllUser = async (req, res) => {
+    try {
+        const users = await User.find()
+        return res.status(200).json({ users })
+    } catch (error) {
+        return res.status(500).json({ msg: error })
+    }
+}
 module.exports.getUser = async (req, res) => {
     try {
-        const user = await Users.findOne({ _id: req.user.id });
+        const user = await User.findOne({ _id: req.user.id });
         if (!user) return res.status(400).json({ msg: "user doesn't exists" });
-        res.json({ user });
+        return res.status(200).json({ user })
     } catch (error) {
         return res.status(500).json({ msg: error })
     }
@@ -92,15 +99,35 @@ module.exports.refreshToken = async (req, res) => {
 }
 module.exports.addCart = async (req, res) => {
     try {
-        const user = await Users.findById(req.user.id)
+        const user = await User.findById(req.user.id)
         if (!user) return res.status(400).json({ msg: "User does not exists" });
-        await Users.findOneAndUpdate({ _id: req.user.id }, { cart: req.body.cart })
+        await User.findOneAndUpdate({ _id: req.user.id }, { cart: req.body.cart })
         return res.status(200).json("Added to cart");
     } catch (error) {
         return res.status(500).json({ msg: error.message })
     }
 }
-
+module.exports.getAddress = async (req, res) => {
+    console.log(req.user);
+    const user = await User.findById(req.user.id)
+    if (!user) return res.status(400).json({ msg: "User does not exists" });
+    const address = await User.findById(req.user.id).select('address')
+    console.log(address);
+    res.json({ address })
+}
+module.exports.addAddress = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id)
+        if (!user) return res.status(400).json({ msg: "User does not exists" });
+        console.log(req.body);
+        await User.findOneAndUpdate({ _id: req.user.id }, {
+            address: [...user.address, req.body]
+        })
+        return res.status(200).json("Add address");
+    } catch (error) {
+        return res.status(500).json({ msg: error.message })
+    }
+}
 module.exports.history = async (req, res) => {
     try {
         const history = await Checkout.find({ userId: req.user.id })

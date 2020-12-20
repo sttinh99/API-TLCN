@@ -37,6 +37,10 @@ const productSchema = new mongoose.Schema({
     sold: {
         type: Number,
         default: 0
+    },
+    isDelete: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true
