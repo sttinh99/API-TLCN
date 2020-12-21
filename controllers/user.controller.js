@@ -116,12 +116,25 @@ module.exports.getAddress = async (req, res) => {
     res.json({ address })
 }
 module.exports.addAddress = async (req, res) => {
+    console.log(req.body, 'body');
     try {
         const user = await User.findById(req.user.id)
         if (!user) return res.status(400).json({ msg: "User does not exists" });
-        console.log(req.body);
         await User.findOneAndUpdate({ _id: req.user.id }, {
-            address: [...user.address, req.body]
+            addresses: [...user.addresses, req.body]
+        })
+        return res.status(200).json("Add address");
+    } catch (error) {
+        return res.status(500).json({ msg: error.message })
+    }
+}
+module.exports.removeItem = async (req, res) => {
+    console.log(req.body, 'body');
+    try {
+        const user = await User.findById(req.user.id)
+        if (!user) return res.status(400).json({ msg: "User does not exists" });
+        await User.findOneAndUpdate({ _id: req.user.id }, {
+            addresses: req.body.addresses
         })
         return res.status(200).json("Add address");
     } catch (error) {
