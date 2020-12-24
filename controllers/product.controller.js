@@ -4,7 +4,7 @@ module.exports.getProducts = async (req, res) => {
         //console.log(req.query);
         const feature = new APIfeature(Products.find(), req.query).filtering().sorting().paginating();
         const products = await feature.query;
-        res.json({
+        return res.json({
             status: "success",
             result: products.length,
             products: products

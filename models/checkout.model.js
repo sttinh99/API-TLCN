@@ -14,11 +14,7 @@ const checkoutSchema = new mongoose.Schema({
         require: true
     },
     address: {
-        type: String,
-        require: true
-    },
-    phone: {
-        type: String,
+        type: Object,
         require: true
     },
     cart: {
