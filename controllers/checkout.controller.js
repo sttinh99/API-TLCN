@@ -19,14 +19,14 @@ module.exports.createCheckout = async (req, res) => {
     // console.log(req.body, "body");
     const user = await User.findById(req.user.id).select('name email');
     if (!user) return res.status(400).json({ msg: "user does not exists" });
-    const { cart, address } = req.body;
+    const { cart, address, payments } = req.body;
     const { _id, name, email } = user;
     const total = cart.reduce((prev, item) => {
         return prev + item.count * item.prices
     }, 0)
     console.log(cart);
     const newCheckout = new Checkout({
-        userId: _id, name, email, cart, address, total: total
+        userId: _id, name, email, cart, address, total: total, payments
     })
     cart.map(async item => {
         const x = await Product.findOne({ _id: item._id });

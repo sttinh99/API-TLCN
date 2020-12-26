@@ -28,6 +28,10 @@ const checkoutSchema = new mongoose.Schema({
     total: {
         type: Number,
         default: 0
+    },
+    payments: {
+        type: String,
+        default: "Payment at home"
     }
 }, {
     timestamps: true
