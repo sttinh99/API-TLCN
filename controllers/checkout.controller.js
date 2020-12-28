@@ -19,16 +19,15 @@ module.exports.createCheckout = async (req, res) => {
     // console.log(req.body, "body");
     const user = await User.findById(req.user.id).select('name email');
     if (!user) return res.status(400).json({ msg: "user does not exists" });
-    const { cart, address, payments } = req.body;
+    const { cart, address, payments, deliveryCharges, tax, total } = req.body;
+    console.log(req.body.payments);
     const { _id, name, email } = user;
-    const total = cart.reduce((prev, item) => {
-        return prev + item.count * item.prices
-    }, 0)
     console.log(cart);
     const newCheckout = new Checkout({
-        userId: _id, name, email, cart, address, total: total, payments
+        userId: _id, name, email, cart, address, total: total, payments, deliveryCharges, tax
     })
     cart.map(async item => {
+        console.log(item);
         const x = await Product.findOne({ _id: item._id });
         await Product.findOneAndUpdate({ _id: item._id }, {
             sold: x.sold + item.count,
@@ -39,12 +38,11 @@ module.exports.createCheckout = async (req, res) => {
     res.json({ newCheckout })
 }
 module.exports.updateCheckout = async (req, res) => {
-    console.log(req.body);
     try {
         await Checkout.findByIdAndUpdate({ _id: req.params.id }, { status: req.body.status });
-        res.json({ msg: "update a Checkout" });
+        return res.json({ msg: "update a Checkout" });
     } catch (error) {
-        res.status(500).json({ msg: error })
+        return res.status(500).json({ msg: error })
     }
 }
 class APIfeature {

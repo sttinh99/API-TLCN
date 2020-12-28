@@ -32,6 +32,14 @@ const checkoutSchema = new mongoose.Schema({
     payments: {
         type: String,
         default: "Payment at home"
+    },
+    tax: {
+        type: Number,
+        default: 0
+    },
+    deliveryCharges: {
+        type: String,
+        default: 0
     }
 }, {
     timestamps: true
