@@ -16,12 +16,18 @@ module.exports.getProducts = async (req, res) => {
 module.exports.createProduct = async (req, res) => {
     try {
         console.log(req.body);
-        const { title, prices, description, content, images, category, quantity } = req.body;
+        var name;
+        var { title, brand, series, warranty ,prices, description, content, images, category, quantity } = req.body;
+        name= category + " "+brand+" "+series+" "+ title;
+        for(key in content){
+            if(content[key]) name +=` /${content[key]}`;
+        }
+        title=name;
         if (!images) return res.status(400).json({ msg: "no images upload" });
         const product = await Products.findOne({ title: title });
         if (product) return res.status(400).json({ msg: "This product already exist" });
         const newProduct = new Products({
-            title: title.toLowerCase(), prices, description, content, images, category, quantity
+            title: title.toLowerCase(),brand,series,warranty, prices, description, content, images, category, quantity
         })
         await newProduct.save();
         res.json({ newProduct });
