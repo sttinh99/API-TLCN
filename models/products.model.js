@@ -6,6 +6,14 @@ const productSchema = new mongoose.Schema({
         trim: true,
         require: true
     },
+    brand: {
+        type: String,
+        require: true
+    }, 
+    warranty: {
+        type: String,
+        require: true
+    },
     prices: {
         type: Number,
         require: true
@@ -15,8 +23,8 @@ const productSchema = new mongoose.Schema({
         require: true
     },
     content: {
-        type: String,
-        require: true
+        type:Object,
+        required: true
     },
     images: {
         type: Object,
