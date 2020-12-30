@@ -144,7 +144,7 @@ module.exports.removeItem = async (req, res) => {
 module.exports.history = async (req, res) => {
     try {
         const history = await Checkout.find({ userId: req.user.id })
-        res.json(history)
+        return res.status(200).json(history)
     } catch (error) {
         return res.status(500).json({ msg: error.message })
     }

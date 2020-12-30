@@ -2,7 +2,7 @@ const Products = require('../models/products.model')
 module.exports.getProducts = async (req, res) => {
     try {
         //console.log(req.query);
-        const feature = new APIfeature(Products.find(), req.query).filtering().sorting().paginating();
+        const feature = new APIfeature(Products.find(), req.query).filtering().sorting();
         const products = await feature.query;
         return res.json({
             status: "success",
@@ -16,12 +16,12 @@ module.exports.getProducts = async (req, res) => {
 module.exports.createProduct = async (req, res) => {
     try {
         console.log(req.body);
-        const { title, prices, description, content, images, category, quantity } = req.body;
+        const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
         if (!images) return res.status(400).json({ msg: "no images upload" });
         const product = await Products.findOne({ title: title });
         if (product) return res.status(400).json({ msg: "This product already exist" });
         const newProduct = new Products({
-            title: title.toLowerCase(), prices, description, content, images, category, quantity
+            title: title.toLowerCase(), prices, description, content, images, category, quantity, warranty, brand
         })
         await newProduct.save();
         res.json({ newProduct });
@@ -31,10 +31,10 @@ module.exports.createProduct = async (req, res) => {
 }
 module.exports.updateProduct = async (req, res) => {
     try {
-        const { title, prices, description, content, images, category, quantity } = req.body;
+        const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
         if (!images) return res.status(400).json({ msg: "no images upload" });
         await Products.findOneAndUpdate({ _id: req.params.id }, {
-            title: title.toLowerCase(), prices, description, content, images, category, quantity
+            title: title.toLowerCase(), prices, description, content, images, category, quantity, warranty, brand
         })
 
         res.json({ msg: "updated a product" });

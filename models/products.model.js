@@ -10,12 +10,20 @@ const productSchema = new mongoose.Schema({
         type: Number,
         require: true
     },
+    warranty: {
+        type: String,
+        required: true
+    },
+    brand: {
+        type: String,
+        required: true
+    },
     description: {
         type: String,
         require: true
     },
     content: {
-        type: String,
+        type: Object,
         require: true
     },
     images: {

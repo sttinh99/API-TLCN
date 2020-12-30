@@ -6,7 +6,7 @@ module.exports.getCheckout = async (req, res) => {
     try {
         const feature = new APIfeature(Checkout.find(), req.query).filtering().sorting().paginating();
         const checkouts = await feature.query;
-        res.json({
+        return res.status(200).json({
             status: "success",
             result: checkouts.length,
             checkouts: checkouts
@@ -80,7 +80,7 @@ class APIfeature {
     }
     paginating() {
         const page = this.queryString.page * 1 || 1;
-        const limit = this.queryString.limit * 1 || 8;
+        const limit = this.queryString.limit * 1 || 10;
         const skip = (page - 1) * limit;
         this.query = this.query.skip(skip).limit(limit);
         return this;
