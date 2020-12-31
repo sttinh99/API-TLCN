@@ -1,16 +1,21 @@
 const User = require('../models/users.model');
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const Checkout = require('../models/checkout.model')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { use } = require('../routers/user.router');
 
 module.exports.register = async (req, res) => {
     //console.log(req.body);
     try {
         const { name, email, password } = req.body;
+        if (!name || !email || !password) return res.status(400).json({ msg: "Please fill in all fields" });
+        if (!validateEmail(email)) return res.status(400).json({ msg: "Invalid email" });
         const user = await User.findOne({ email });
         if (user) return res.status(400).json({ msg: 'the email already exists' });
         //console.log(password);
-        if (password.length < 5)
+        if (password.length < 6)
             return res.status(400).json({ msg: 'Password it at least 6 character long' });
         //encrypt Password
         const passwordHash = await bcrypt.hash(password, 10);
@@ -18,6 +23,7 @@ module.exports.register = async (req, res) => {
         const newUser = new User({
             name, email, password: passwordHash
         })
+
         await newUser.save();
 
         //Then create jwt to auth
@@ -30,9 +36,9 @@ module.exports.register = async (req, res) => {
             maxAge: 7 * 24 * 60 * 60 * 1000 //7day
         })
 
-        res.json({ accesstoken })
+        return res.status(200).json({ accesstoken })
     } catch (error) {
-        return res.status(500).json({ msg: error })
+        return res.status(500).json({ msg: error.message })
     }
 }
 module.exports.login = async (req, res) => {
@@ -51,7 +57,7 @@ module.exports.login = async (req, res) => {
             path: '/user/refresh_token',
             maxAge: 7 * 24 * 60 * 60 * 1000 //7day
         })
-        res.json({ accesstoken })
+        return res.status(200).json({ accesstoken })
     } catch (error) {
         return res.status(500).json({ msg: error })
     }
@@ -149,9 +155,52 @@ module.exports.history = async (req, res) => {
         return res.status(500).json({ msg: error.message })
     }
 }
+module.exports.forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email: email })
+        if (!user) {
+            return res.status(400).json({ msg: "this email does not exists" });
+        }
+        const accesstoken = createAccessToken({ id: user._id })
+        const msg = {
+            to: "truongtinh110399@gmail.com",
+            from: process.env.MAIL,
+            subject: 'Reset Password for this email',
+            text: 'and easy to do anywhere, even with Node.js',
+            html: `<a='href'>${process.env.CLIENT_URL}/user/reset/${accesstoken}</a>`,
+        };
+        sgMail.send(msg);
+        res.status(200).json({ msg: "please check your email" });
+    } catch (error) {
+        return res.status(500).json({ msg: error.message })
+    }
+}
+module.exports.resetPassword = async (req, res) => {
+    const { verify } = req.params;
+    const { password } = req.body
+    try {
+        if (!verify) return res.status(400).json({ msg: "Invalid Authentication" });
+        jwt.verify(verify, process.env.ACCESS_TOKEN_SCERET, async (err, user) => {
+            console.log(user);
+            const takeUser = await User.findOne({ _id: user.id });
+            if (!takeUser) {
+                res.status(400).json({ msg: "err find user" })
+            }
+            await User.findByIdAndUpdate({ _id: user.id }, { password })
+        })
+        res.json({ msg: "oke" })
+    } catch (error) {
+        return res.status(500).json({ msg: error })
+    }
+}
 const createAccessToken = (user) => {
     return jwt.sign(user, process.env.ACCESS_TOKEN_SCERET, { expiresIn: "11m" });
 }
 const createRefreshToken = (user) => {
     return jwt.sign(user, process.env.REFRESH_TOKEN_SCERET, { expiresIn: "7d" });
+}
+function validateEmail(email) {
+    const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
 }
