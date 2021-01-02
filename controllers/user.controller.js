@@ -4,7 +4,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 const Checkout = require('../models/checkout.model')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { use } = require('../routers/user.router');
 
 module.exports.register = async (req, res) => {
     //console.log(req.body);
@@ -59,7 +58,7 @@ module.exports.login = async (req, res) => {
         })
         return res.status(200).json({ accesstoken })
     } catch (error) {
-        return res.status(500).json({ msg: error })
+        return res.status(500).json({ msg: error.message })
     }
 }
 module.exports.getAllUser = async (req, res) => {
@@ -149,7 +148,8 @@ module.exports.removeItem = async (req, res) => {
 }
 module.exports.history = async (req, res) => {
     try {
-        const history = await Checkout.find({ userId: req.user.id })
+        const feature = new APIfeature(Checkout.find({ userId: req.user.id }), req.query).sorting()
+        const history = await feature.query;
         return res.status(200).json(history)
     } catch (error) {
         return res.status(500).json({ msg: error.message })
@@ -159,37 +159,37 @@ module.exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
         const user = await User.findOne({ email: email })
-        if (!user) {
-            return res.status(400).json({ msg: "this email does not exists" });
-        }
-        const accesstoken = createAccessToken({ id: user._id })
-        const msg = {
-            to: "truongtinh110399@gmail.com",
+        console.log(user);
+        if (!user) return res.status(400).json({ msg: "this email does not exists" });
+        const activationtoken = activationToken({ id: user._id })
+        const sendMail = {
+            to: user.email,
             from: process.env.MAIL,
             subject: 'Reset Password for this email',
             text: 'and easy to do anywhere, even with Node.js',
-            html: `<a='href'>${process.env.CLIENT_URL}/user/reset/${accesstoken}</a>`,
+            html: `<a='href'>${process.env.CLIENT_URL}/user/reset/${activationtoken}</a>`,
         };
-        sgMail.send(msg);
-        res.status(200).json({ msg: "please check your email" });
+        sgMail.send(sendMail);
+        return res.status(200).json({ msg: "please check your email" });
     } catch (error) {
         return res.status(500).json({ msg: error.message })
     }
 }
-module.exports.resetPassword = async (req, res) => {
-    const { verify } = req.params;
-    const { password } = req.body
+module.exports.resetPassword = async (req, res, next) => {
     try {
+        const { verify } = req.params;
+        const { password } = req.body
         if (!verify) return res.status(400).json({ msg: "Invalid Authentication" });
-        jwt.verify(verify, process.env.ACCESS_TOKEN_SCERET, async (err, user) => {
-            console.log(user);
-            const takeUser = await User.findOne({ _id: user.id });
-            if (!takeUser) {
-                res.status(400).json({ msg: "err find user" })
+        if (password.length < 6) return res.status(400).json({ msg: 'Password it at least 6 character long' });
+        jwt.verify(verify, process.env.ACTIVATION_TOKEN_SCERET, async (err, user) => {
+            if (!user) {
+                return res.status(400).json({ msg: err.name })
             }
-            await User.findByIdAndUpdate({ _id: user.id }, { password })
+            const passwordHash = await bcrypt.hash(password, 10);
+            await User.findByIdAndUpdate({ _id: user.id }, { password: passwordHash })
+            return res.status(200).json({ msg: "Change password successfully. Please login to continue" });
+            next();
         })
-        res.json({ msg: "oke" })
     } catch (error) {
         return res.status(500).json({ msg: error })
     }
@@ -200,7 +200,53 @@ const createAccessToken = (user) => {
 const createRefreshToken = (user) => {
     return jwt.sign(user, process.env.REFRESH_TOKEN_SCERET, { expiresIn: "7d" });
 }
+const activationToken = (user) => {
+    return jwt.sign(user, process.env.ACTIVATION_TOKEN_SCERET, { expiresIn: "1m" });
+}
 function validateEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
+}
+
+
+class APIfeature {
+    constructor(query, queryString) {
+        this.query = query;
+        this.queryString = queryString;
+    }
+    filtering() {
+        const queryObj = { ...this.queryString } //queryString = req.query
+        //console.log({ before: queryObj });//before delete page...use pagination
+        const excludeFields = ['page', 'sort', 'limit'];
+        excludeFields.forEach(el => delete (queryObj[el]));
+        //console.log({ after: queryObj }) //after delete page...
+        let queryStr = JSON.stringify(queryObj);
+        //console.log({ queryObj, queryStr });
+        queryStr = queryStr.replace(/\b(gte|gt|lt|lte|regex)\b/g, match => '$' + match);
+        //gte >=
+        //gt >
+        //lt < || 
+        //lte <=
+        //regex = tim kiem
+        //console.log({ queryObj, queryStr });
+        this.query.find(JSON.parse(queryStr));
+        return this;
+    }
+    sorting() {
+        if (this.queryString.sort) {
+            const sortBy = this.queryString.sort.split(',').join(' ');
+            this.query = this.query.sort(sortBy);
+        }
+        else {
+            this.query.sort('-createdAt');
+        }
+        return this;
+    }
+    paginating() {
+        const page = this.queryString.page * 1 || 1;
+        const limit = this.queryString.limit * 1 || 10;
+        const skip = (page - 1) * limit;
+        this.query = this.query.skip(skip).limit(limit);
+        return this;
+    }
 }

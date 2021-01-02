@@ -4,7 +4,7 @@ const Product = require('../models/products.model');
 
 module.exports.getCheckout = async (req, res) => {
     try {
-        const feature = new APIfeature(Checkout.find(), req.query).filtering().sorting().paginating();
+        const feature = new APIfeature(Checkout.find(), req.query).sorting();
         const checkouts = await feature.query;
         return res.status(200).json({
             status: "success",
@@ -20,14 +20,14 @@ module.exports.createCheckout = async (req, res) => {
     const user = await User.findById(req.user.id).select('name email');
     if (!user) return res.status(400).json({ msg: "user does not exists" });
     const { cart, address, payments, deliveryCharges, tax, total } = req.body;
-    console.log(req.body.payments);
+    // console.log(req.body.payments);
     const { _id, name, email } = user;
-    console.log(cart);
+    // console.log(cart);
     const newCheckout = new Checkout({
         userId: _id, name, email, cart, address, total: total, payments, deliveryCharges, tax
     })
     cart.map(async item => {
-        console.log(item);
+        // console.log(item);
         const x = await Product.findOne({ _id: item._id });
         await Product.findOneAndUpdate({ _id: item._id }, {
             sold: x.sold + item.count,
@@ -41,6 +41,26 @@ module.exports.updateCheckout = async (req, res) => {
     try {
         await Checkout.findByIdAndUpdate({ _id: req.params.id }, { status: req.body.status });
         return res.json({ msg: "update a Checkout" });
+    } catch (error) {
+        return res.status(500).json({ msg: error })
+    }
+}
+module.exports.deleteCheckout = async (req, res) => {
+    // console.log(req.params);
+    // console.log('kkkkkkkkkkk');
+    try {
+        const x = await Checkout.findById(req.params.id)
+        // console.log(x);
+        x.cart.map(async item => {
+            // console.log(item);
+            const y = await Product.findOne({ _id: item._id });
+            await Product.findOneAndUpdate({ _id: item._id }, {
+                sold: y.sold - item.count,
+                quantity: y.quantity + item.count,
+            });
+        })
+        await Checkout.findByIdAndDelete({ _id: req.params.id });
+        return res.json({ msg: "delete this Checkout" });
     } catch (error) {
         return res.status(500).json({ msg: error })
     }

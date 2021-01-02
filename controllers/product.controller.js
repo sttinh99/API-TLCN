@@ -1,8 +1,7 @@
 const Products = require('../models/products.model')
 module.exports.getProducts = async (req, res) => {
     try {
-        //console.log(req.query);
-        const feature = new APIfeature(Products.find(), req.query).filtering().sorting();
+        const feature = new APIfeature(Products.find(), req.query).filtering().sorting().paginating();
         const products = await feature.query;
         return res.json({
             status: "success",
@@ -84,6 +83,9 @@ class APIfeature {
         return this;
     }
     paginating() {
+        // const x = Products.find();
+        // console.log(x.length, 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx');
+        // console.log(this.query, '------------');
         const page = this.queryString.page * 1 || 1;
         const limit = this.queryString.limit * 1 || 10;
         const skip = (page - 1) * limit;
