@@ -15,12 +15,26 @@ module.exports.getProducts = async (req, res) => {
 module.exports.createProduct = async (req, res) => {
     try {
         console.log(req.body);
-        const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
+        // <<<<<<< HEAD
+        //         const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
+        // =======
+        var name;
+        var { title, brand, series, warranty, prices, description, content, images, category, quantity } = req.body;
+        name = category + " " + brand + " " + series + " " + title;
+        for (key in content) {
+            if (content[key]) name += ` /${content[key]}`;
+        }
+        title = name;
+        // >>>>>>> bf2590240c5e29d114c4ffeaa082b7c03c1c17f9
         if (!images) return res.status(400).json({ msg: "no images upload" });
         const product = await Products.findOne({ title: title });
         if (product) return res.status(400).json({ msg: "This product already exist" });
         const newProduct = new Products({
-            title: title.toLowerCase(), prices, description, content, images, category, quantity, warranty, brand
+            // <<<<<<< HEAD
+            //             title: title.toLowerCase(), prices, description, content, images, category, quantity, warranty, brand
+            // =======
+            title: title.toLowerCase(), brand, series, warranty, prices, description, content, images, category, quantity
+            // >>>>>>> bf2590240c5e29d114c4ffeaa082b7c03c1c17f9
         })
         await newProduct.save();
         res.json({ newProduct });
