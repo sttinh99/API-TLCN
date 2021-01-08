@@ -21,7 +21,7 @@ router.post('/upload', auth.auth, (req, res) => {
             removeTmp(file.tempFilePath);
             return res.status(400).json({ msg: "size to large" }); //1mb
         }
-        if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png') {
+        if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png' && file.mimetype !== 'image/webp') {
             removeTmp(file.tempFilePath);
             return res.status(400).json({ msg: "File format is incorrect" });
         }

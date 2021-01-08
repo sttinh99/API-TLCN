@@ -38,7 +38,7 @@ const checkoutSchema = new mongoose.Schema({
         default: 0
     },
     deliveryCharges: {
-        type: String,
+        type: Number,
         default: 0
     }
 }, {

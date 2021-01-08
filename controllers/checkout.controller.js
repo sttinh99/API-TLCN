@@ -2,6 +2,9 @@ const Checkout = require('../models/checkout.model');
 const User = require('../models/users.model');
 const Product = require('../models/products.model');
 
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+
 module.exports.getCheckout = async (req, res) => {
     try {
         const feature = new APIfeature(Checkout.find(), req.query).sorting();
@@ -20,7 +23,7 @@ module.exports.createCheckout = async (req, res) => {
     const user = await User.findById(req.user.id).select('name email');
     if (!user) return res.status(400).json({ msg: "user does not exists" });
     const { cart, address, payments, deliveryCharges, tax, total } = req.body;
-    // console.log(req.body.payments);
+    console.log(req.body.payments);
     const { _id, name, email } = user;
     // console.log(cart);
     const newCheckout = new Checkout({
@@ -39,7 +42,16 @@ module.exports.createCheckout = async (req, res) => {
 }
 module.exports.updateCheckout = async (req, res) => {
     try {
+        const x = await Checkout.findById({ _id: req.params.id });
         await Checkout.findByIdAndUpdate({ _id: req.params.id }, { status: req.body.status });
+        const sendMail = {
+            to: x.email,
+            from: process.env.MAIL,
+            subject: 'Reset Password for this email',
+            text: 'and easy to do anywhere, even with Node.js',
+            html: `<p>Your order has been confirmed at ${x.updatedAt}</p><div> <a='href'>${process.env.CLIENT_URL}/products</a></div>`,
+        };
+        sgMail.send(sendMail);
         return res.json({ msg: "update a Checkout" });
     } catch (error) {
         return res.status(500).json({ msg: error })

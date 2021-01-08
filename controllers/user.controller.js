@@ -195,7 +195,7 @@ module.exports.resetPassword = async (req, res, next) => {
     }
 }
 const createAccessToken = (user) => {
-    return jwt.sign(user, process.env.ACCESS_TOKEN_SCERET, { expiresIn: "11m" });
+    return jwt.sign(user, process.env.ACCESS_TOKEN_SCERET, { expiresIn: "10m" });
 }
 const createRefreshToken = (user) => {
     return jwt.sign(user, process.env.REFRESH_TOKEN_SCERET, { expiresIn: "7d" });

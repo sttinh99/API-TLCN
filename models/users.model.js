@@ -19,10 +19,6 @@ const userSchema = new mongoose.Schema({
         type: Array,
         default: []
     },
-    avatar: {
-        type: String,
-        default: "",
-    },
     role: {
         type: Number,
         default: 0

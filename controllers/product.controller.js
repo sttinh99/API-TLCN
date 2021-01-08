@@ -1,7 +1,7 @@
 const Products = require('../models/products.model')
 module.exports.getProducts = async (req, res) => {
     try {
-        const feature = new APIfeature(Products.find(), req.query).filtering().sorting().paginating();
+        const feature = new APIfeature(Products.find(), req.query).filtering().sorting();
         const products = await feature.query;
         return res.json({
             status: "success",
@@ -44,7 +44,7 @@ module.exports.updateProduct = async (req, res) => {
 module.exports.deleteProduct = async (req, res) => {
     try {
         await Products.findByIdAndUpdate({ _id: req.params.id }, { isDelete: true });
-        res.json({ msg: "deleted a product" });
+        return res.json({ msg: "deleted a product" });
     } catch (error) {
         return res.status(500).json({ msg: error })
     }
