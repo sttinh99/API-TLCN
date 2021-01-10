@@ -160,7 +160,7 @@ module.exports.forgotPassword = async (req, res) => {
         const { email } = req.body;
         const user = await User.findOne({ email: email })
         console.log(user);
-        if (!user) return res.status(400).json({ msg: "this email does not exists" });
+        if (!user || user.role === 1) return res.status(400).json({ msg: "this email does not exists" });
         const activationtoken = activationToken({ id: user._id })
         const sendMail = {
             to: user.email,
