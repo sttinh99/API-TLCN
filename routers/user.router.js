@@ -16,5 +16,6 @@ router.post('/register', userController.register);
 router.post('/login', userController.login);
 router.post('/forget', userController.forgotPassword)
 router.post('/reset/:verify', userController.resetPassword)
+router.post('/block/:id', auth.auth, auth.authAdmin, userController.changeAccount)
 
 module.exports = router;

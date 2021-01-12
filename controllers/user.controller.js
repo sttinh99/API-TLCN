@@ -46,6 +46,7 @@ module.exports.login = async (req, res) => {
         //console.log(req.body, "asdasd");
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ msg: "user doesn't exists" });
+        if (user.isBlock === true) return res.status(400).json({ msg: "Your account has been locked" });
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ msg: "Wrong password!!!" });
         const accesstoken = createAccessToken({ id: user._id });
@@ -190,6 +191,15 @@ module.exports.resetPassword = async (req, res, next) => {
             return res.status(200).json({ msg: "Change password successfully. Please login to continue" });
             next();
         })
+    } catch (error) {
+        return res.status(500).json({ msg: error })
+    }
+}
+module.exports.changeAccount = async (req, res) => {
+    try {
+        const user = req.params;
+        await User.findByIdAndUpdate({ _id: user.id }, { isBlock: req.body.isBlock })
+        return res.status(200).json({ msg: "blocked" })
     } catch (error) {
         return res.status(500).json({ msg: error })
     }
