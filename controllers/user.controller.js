@@ -126,6 +126,8 @@ module.exports.addAddress = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
         if (!user) return res.status(400).json({ msg: "User does not exists" });
+        if (req.body.name.length === 0 || req.body.name.length >= 30) return res.status(400).json({ msg: "Form is not format" });
+        if (req.body.phone.length !== 10) return res.status(400).json({ msg: "Please enter the correct phone number" });
         await User.findOneAndUpdate({ _id: req.user.id }, {
             addresses: [...user.addresses, req.body]
         })
@@ -204,6 +206,31 @@ module.exports.changeAccount = async (req, res) => {
         return res.status(500).json({ msg: error })
     }
 }
+module.exports.changePassword = async (req, res) => {
+    try {
+        const param = req.params;
+        console.log(param.id, 'xxx');
+        const { password, newPassword, confirmPassword } = req.body;
+        console.log(password, newPassword, confirmPassword);
+        const user = await User.findOne({ _id: param.id })
+        if (!user) {
+            console.log("xxxx");
+            return res.status(400).json({ msg: "user doesn't exists" });
+        }
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ msg: "The password you entered is incorrect" })
+        if (newPassword.length < 6) return res.status(400).json({ msg: 'Password it at least 6 character long' });
+        if (newPassword !== confirmPassword) return res.status(400).json({ msg: 'Password confirmation failed' });
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await User.findByIdAndUpdate({ _id: user.id }, { password: passwordHash })
+        return res.status(200).json({ msg: "Change password successfully. Please login to continue" });
+    } catch (error) {
+        return res.status(500).json({ msg: error })
+    }
+}
+
+
+
 const createAccessToken = (user) => {
     return jwt.sign(user, process.env.ACCESS_TOKEN_SCERET, { expiresIn: "10m" });
 }
@@ -217,8 +244,6 @@ function validateEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
 }
-
-
 class APIfeature {
     constructor(query, queryString) {
         this.query = query;

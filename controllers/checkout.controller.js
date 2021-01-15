@@ -23,7 +23,7 @@ module.exports.createCheckout = async (req, res) => {
     const user = await User.findById(req.user.id).select('name email');
     if (!user) return res.status(400).json({ msg: "user does not exists" });
     const { cart, address, payments, deliveryCharges, tax, total } = req.body;
-    console.log(req.body.payments);
+    console.log(cart);
     const { _id, name, email } = user;
     // console.log(cart);
     const newCheckout = new Checkout({
