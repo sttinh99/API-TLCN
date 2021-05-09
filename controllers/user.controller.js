@@ -106,6 +106,7 @@ module.exports.refreshToken = async (req, res) => {
 module.exports.addCart = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
+        console.log(req.body.cart)
         if (!user) return res.status(400).json({ msg: "User does not exists" });
         await User.findOneAndUpdate({ _id: req.user.id }, { cart: req.body.cart })
         return res.status(200).json("Added to cart");
@@ -201,6 +202,7 @@ module.exports.changeAccount = async (req, res) => {
     try {
         const user = req.params;
         await User.findByIdAndUpdate({ _id: user.id }, { isBlock: req.body.isBlock })
+        // res.clearCookie('refreshtoken', { path: '/user/refresh_token' })
         return res.status(200).json({ msg: "blocked" })
     } catch (error) {
         return res.status(500).json({ msg: error })

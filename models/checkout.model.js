@@ -33,10 +33,6 @@ const checkoutSchema = new mongoose.Schema({
         type: String,
         default: "Payment at home"
     },
-    tax: {
-        type: Number,
-        default: 0
-    },
     deliveryCharges: {
         type: Number,
         default: 0

@@ -9,6 +9,7 @@ module.exports.auth = (req, res, next) => {
             //console.log(user);
             if (err) return res.status(400).json({ msg: "Invalid Authentication" });
             req.user = user;
+            //console.log(user)
             next();
         })
     } catch (error) {
@@ -17,10 +18,10 @@ module.exports.auth = (req, res, next) => {
 }
 module.exports.authAdmin = async (req, res, next) => {
     try {
-        // console.log(req.user);
+        //console.log(req.user);
         const user = await Users.findOne({ _id: req.user.id })
         // console.log(user);
-        // console.log(user.role);
+        //console.log(user.role);
         if (user.role === 0) return res.status(400).json({ msg: "Admin resource access denied" });
         next();
     } catch (error) {

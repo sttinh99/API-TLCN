@@ -2,9 +2,10 @@ const Checkout = require('../models/checkout.model');
 const User = require('../models/users.model');
 const Product = require('../models/products.model');
 
-const sgMail = require('@sendgrid/mail')
-sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
+
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 module.exports.getCheckout = async (req, res) => {
     try {
         const feature = new APIfeature(Checkout.find(), req.query).sorting();
@@ -22,12 +23,12 @@ module.exports.createCheckout = async (req, res) => {
     // console.log(req.body, "body");
     const user = await User.findById(req.user.id).select('name email');
     if (!user) return res.status(400).json({ msg: "user does not exists" });
-    const { cart, address, payments, deliveryCharges, tax, total } = req.body;
+    const { cart, address, payments, deliveryCharges, total } = req.body;
     console.log(cart);
     const { _id, name, email } = user;
     // console.log(cart);
     const newCheckout = new Checkout({
-        userId: _id, name, email, cart, address, total: total, payments, deliveryCharges, tax
+        userId: _id, name, email, cart, address, total: total, payments, deliveryCharges
     })
     cart.map(async item => {
         // console.log(item);
@@ -37,6 +38,9 @@ module.exports.createCheckout = async (req, res) => {
             quantity: x.quantity - item.count,
         });
     })
+    // io.on("connection", function (socket) {
+    //     socket.emit("information", { newCheckout });
+    // });
     await newCheckout.save();
     res.json({ newCheckout })
 }

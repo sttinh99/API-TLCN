@@ -1,8 +1,16 @@
 const Products = require('../models/products.model')
+const Checkout = require('../models/checkout.model')
+const Discount = require('../models/discount.model')
+
 module.exports.getProducts = async (req, res) => {
     try {
         const feature = new APIfeature(Products.find(), req.query).filtering().sorting();
         const products = await feature.query;
+        // let checkout = await Checkout.find();
+        // let x = checkout.filter((item) => {
+        //     return item.status === false;
+        // })
+        // await console.log(x.length);
         return res.json({
             status: "success",
             result: products.length,
@@ -14,7 +22,7 @@ module.exports.getProducts = async (req, res) => {
 }
 module.exports.createProduct = async (req, res) => {
     try {
-        console.log(req.body);
+        // console.log(req.body);
         const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
         if (!images) return res.status(400).json({ msg: "no images upload" });
         const product = await Products.findOne({ title: title });
@@ -48,12 +56,41 @@ module.exports.updateProduct = async (req, res) => {
 }
 module.exports.deleteProduct = async (req, res) => {
     try {
-        await Products.findByIdAndUpdate({ _id: req.params.id }, { isDelete: true });
-        return res.json({ msg: "deleted a product" });
+        const id = req.params.id;
+        let checkout = await Checkout.find();
+        let x = checkout.filter(item => item.status === false);
+        const checkItem = x.find(item => {
+            if (item.cart.length > 0) {
+                const x = checkProducts(item.cart, id);
+
+                console.log(x);
+                return x;
+            }
+        })
+        // let checkProduct = x.find(item => {
+        //     console.log(checkProducts(item.cart, id));
+        //     return checkProducts(item.cart, id);
+        // })
+        // console.log(checkProduct);
+        if (checkItem) {
+            return res.json({ msg: "Can not delete. Goods are being shipped" });
+        }
+        else {
+            await Products.findByIdAndUpdate({ _id: req.params.id }, { isDelete: true });
+            return res.json({ msg: "deleted a product" });
+        }
     } catch (error) {
         return res.status(500).json({ msg: error })
     }
 }
+
+function checkProducts(arrCart, idProduct) {
+    const x = arrCart.find(item => {
+        return item._id === idProduct
+    })
+    return x;
+}
+
 class APIfeature {
     constructor(query, queryString) {
         this.query = query;

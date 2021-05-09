@@ -11,8 +11,14 @@ const upload = require('./routers/upload.router');
 const product = require('./routers/product.route')
 const checkout = require('./routers/checkout.route')
 const payment = require('./routers/payment.route')
+const discount = require('./routers/discounts.route');
 
 const app = express();
+
+const http = require('http').createServer(app);
+// const io = require('socket.io')(http);
+
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
@@ -26,6 +32,7 @@ app.use('/images', upload);
 app.use('/products', product);
 app.use('/checkout', checkout);
 app.use('/payment', payment);
+app.use('/discounts', discount)
 
 
 
@@ -46,9 +53,21 @@ mongoose
 app.get('/', (req, res) => {
     res.json('test');
 })
-
+// io.on("connection", (socket) => {
+//     socket.on("client-sent-data", (data) => {
+//         console.log(data, 'x1');
+//         io.sockets.emit("server-sent-data", data.msg);
+//     })
+//     socket.on("add-product", (data) => {
+//         console.log(data, 'x2');
+//         io.sockets.emit("add-product", data);
+//     })
+//     socket.on('disconnect', (reason) => {
+//         console.log("disconnect");
+//     });
+// });
 
 const PORT = process.env.PORT || 8000
-app.listen(PORT, () => {
+http.listen(PORT, () => {
     console.log('server is running on port', PORT);
 })
