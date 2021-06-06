@@ -24,13 +24,23 @@ module.exports.createProduct = async (req, res) => {
     try {
         // console.log(req.body);
         const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
+        let discount = 0;
+        const takeDiscount = await Discount.findOne({ category: category });
+        if (takeDiscount && (new Date(takeDiscount.to) - new Date()) > 0) {
+            discount = takeDiscount.discount;
+        }
+        // allDiscounts.map((discount) => {
+        //     if (discount.category === category) {
+        //         prices = prices + (prices * discount) / 100
+        //     }
+        // })
         if (!images) return res.status(400).json({ msg: "no images upload" });
         const product = await Products.findOne({ title: title });
         if (prices < 0) return res.status(400).json({ msg: "Form is not format" });
         if (quantity < 0) return res.status(400).json({ msg: "Form is not format" });
         if (product) return res.status(400).json({ msg: "This product already exist" });
         const newProduct = new Products({
-            title: title.toLowerCase(), prices, description, content, images, category, quantity, warranty, brand
+            title: title.toLowerCase(), prices, description, content, images, category, quantity, warranty, brand, discount
         })
         await newProduct.save();
         res.json({ newProduct });

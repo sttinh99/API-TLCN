@@ -71,7 +71,7 @@ module.exports.createDiscount = async (req, res) => {
         // await newCoupoun.save();
         // return res.json({ msg: "created a coupoun", newCoupoun });
     } catch (error) {
-        return res.status(500).json({ msg: error })
+        return res.status(500).json({ msg: "Cannot create discount" })
     }
 }
 module.exports.deleteDiscount = async (req, res) => {
@@ -90,7 +90,7 @@ module.exports.deleteDiscount = async (req, res) => {
             })
         })
         await Discount.findByIdAndDelete(req.params.id);
-        return res.json({ msg: "deleted a discount" });
+        return res.json({ msg: "Deleted this discount" });
     } catch (error) {
         return res.status(500).json({ msg: error })
     }

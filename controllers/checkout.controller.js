@@ -51,9 +51,10 @@ module.exports.updateCheckout = async (req, res) => {
         const sendMail = {
             to: x.email,
             from: process.env.MAIL,
-            subject: 'Reset Password for this email',
+            subject: 'You have successfully placed your order',
             text: 'and easy to do anywhere, even with Node.js',
-            html: `<p>Your order has been confirmed at ${x.updatedAt}</p><div> <a='href'>${process.env.CLIENT_URL}/products</a></div>`,
+            html: `<p style="color:red">Your order has been confirmed at ${x.updatedAt}</p>
+            <div><p>Discover great service here</p><a='href'>${process.env.CLIENT_URL}/products</a></div>`,
         };
         sgMail.send(sendMail);
         return res.json({ msg: "update a Checkout" });

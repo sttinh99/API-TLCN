@@ -16,8 +16,42 @@ const discount = require('./routers/discounts.route');
 const app = express();
 
 const http = require('http').createServer(app);
-// const io = require('socket.io')(http);
+const io = require('socket.io')(http);
 
+io.on("connection", (socket) => {
+    console.log(socket.id + 'connected')
+    socket.on('test', (data) => {
+        console.log(data);
+    })
+    socket.on("client-sent-data", (data) => {
+        // console.log(data, 'x1');
+        io.sockets.emit("server-sent-data", data.msg);
+    })
+    socket.on("add-product", (data) => {
+        console.log(data, 'x2');
+        io.sockets.emit("add-product", data);
+    })
+    socket.on("deleteDiscount", (data) => {
+        console.log(data, 'x3');
+        io.sockets.emit("deleteDiscount", data);
+    })
+    socket.on('disconnect', () => {
+        console.log(socket.id + ' disconnect');
+    })
+});
+// io.on("connection", (socket) => {
+// socket.on("client-sent-data", (data) => {
+//     console.log(data, 'x1');
+//     io.sockets.emit("server-sent-data", data.msg);
+// })
+// socket.on("add-product", (data) => {
+//     console.log(data, 'x2');
+//     io.sockets.emit("add-product", data);
+// })
+//     socket.on('disconnect', (reason) => {
+//         console.log("disconnect");
+//     });
+// });
 
 app.use(express.json());
 app.use(cookieParser());
@@ -53,19 +87,7 @@ mongoose
 app.get('/', (req, res) => {
     res.json('test');
 })
-// io.on("connection", (socket) => {
-//     socket.on("client-sent-data", (data) => {
-//         console.log(data, 'x1');
-//         io.sockets.emit("server-sent-data", data.msg);
-//     })
-//     socket.on("add-product", (data) => {
-//         console.log(data, 'x2');
-//         io.sockets.emit("add-product", data);
-//     })
-//     socket.on('disconnect', (reason) => {
-//         console.log("disconnect");
-//     });
-// });
+
 
 const PORT = process.env.PORT || 8000
 http.listen(PORT, () => {
