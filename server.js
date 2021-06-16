@@ -39,19 +39,6 @@ io.on("connection", (socket) => {
         console.log(socket.id + ' disconnect');
     })
 });
-// io.on("connection", (socket) => {
-// socket.on("client-sent-data", (data) => {
-//     console.log(data, 'x1');
-//     io.sockets.emit("server-sent-data", data.msg);
-// })
-// socket.on("add-product", (data) => {
-//     console.log(data, 'x2');
-//     io.sockets.emit("add-product", data);
-// })
-//     socket.on('disconnect', (reason) => {
-//         console.log("disconnect");
-//     });
-// });
 
 app.use(express.json());
 app.use(cookieParser());

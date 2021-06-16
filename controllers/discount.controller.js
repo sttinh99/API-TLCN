@@ -1,7 +1,6 @@
 const Discount = require('../models/discount.model');
 const Category = require('../models/categories.model');
 const Product = require('../models/products.model');
-const { find } = require('../models/discount.model');
 
 const aWeek = 7 * 3600 * 24 * 1000; //7days
 const scWeek = 7 * 2 * 3600 * 24 * 1000; //7days
@@ -62,14 +61,6 @@ module.exports.createDiscount = async (req, res) => {
         console.log(newDiscount);
         await newDiscount.save();
         return res.json({ msg: "created a coupoun", newDiscount });
-        // if (req.body)
-        // const checkCoupoun = await Discount.findOne({ coupoun });
-        // console.log(checkCoupoun);
-        // if (checkCoupoun) return res.status(400).json({ msg: "this category already exists" });
-        // const newCoupoun = new Discount({ ...req.body });
-        // console.log(newCoupoun)
-        // await newCoupoun.save();
-        // return res.json({ msg: "created a coupoun", newCoupoun });
     } catch (error) {
         return res.status(500).json({ msg: "Cannot create discount" })
     }
@@ -95,12 +86,3 @@ module.exports.deleteDiscount = async (req, res) => {
         return res.status(500).json({ msg: error })
     }
 }
-// module.exports.updateCategory = async (req, res) => {
-//     try {
-//         const { name } = req.body;
-//         await Category.findByIdAndUpdate({ _id: req.params.id }, { name });
-//         res.json({ msg: "update a category" });
-//     } catch (error) {
-//         res.status(500).json({ msg: error })
-//     }
-// }
