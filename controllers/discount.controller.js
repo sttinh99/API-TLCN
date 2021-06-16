@@ -25,7 +25,7 @@ module.exports.createDiscount = async (req, res) => {
         let day = Date.now();
         let deadline;
         const checkDiscount = await Discount.findOne({ category: req.body.category });
-        if (checkDiscount) {
+        if (checkDiscount && checkDiscount.isDelete === false) {
             return req.status(400).json({ msg: "this discount already exists" })
         }
         if (!req.body.date) {
@@ -80,7 +80,7 @@ module.exports.deleteDiscount = async (req, res) => {
                 discount: 0
             })
         })
-        await Discount.findByIdAndDelete(req.params.id);
+        await Discount.findByIdAndUpdate({ _id: req.params.id }, { isDelete: true });
         return res.json({ msg: "Deleted this discount" });
     } catch (error) {
         return res.status(500).json({ msg: error })

@@ -1,5 +1,6 @@
 const Category = require('../models/categories.model');
 const Product = require('../models/products.model');
+const Discount = require('../models/discount.model')
 
 module.exports.getCategories = async (req, res) => {
     try {
@@ -35,6 +36,8 @@ module.exports.deleteCategory = async (req, res) => {
                 msg: "Please delete all products of this category"
             })
         }
+        const takeDiscount = await Discount.findOne({ category: nameCategory.name })
+        await Discount.findByIdAndUpdate({ _id: takeDiscount._id }, { isDelete: true })
         await Category.findByIdAndDelete(req.params.id);
         return res.json({ msg: "deleted a category" });
     } catch (error) {
