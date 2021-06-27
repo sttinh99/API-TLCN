@@ -12,14 +12,38 @@ const product = require('./routers/product.route')
 const checkout = require('./routers/checkout.route')
 const payment = require('./routers/payment.route')
 const discount = require('./routers/discounts.route');
+const comment = require('./routers/comments.route');
+
+const Comments = require('./models/comments.model')
 
 const app = express();
 
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
-
+let users = [];
 io.on("connection", (socket) => {
     console.log(socket.id + 'connected')
+    socket.on("joinRoom", id => {
+        const user = { idRoom: socket.id, room: id }
+        const check = users.every(user => user.idRoom !== socket.id)
+        if (check) {
+            users.push(user)
+            socket.join(user.room);
+        }
+        else {
+            users.map(user => {
+                if (user.idRoom === socket.id) {
+                    if (user.room !== id) {
+                        socket.leave(user.room)
+                        socket.join(id);
+                        user.room = id;
+                    }
+                }
+            })
+        }
+        // console.log(users)
+        // console.log(socket.adapter.rooms);
+    })
     socket.on('test', (data) => {
         console.log(data);
     })
@@ -35,6 +59,26 @@ io.on("connection", (socket) => {
         console.log(data, 'x3');
         io.sockets.emit("deleteDiscount", data);
     })
+    socket.on("createcomment", async (data) => {
+        console.log(data);
+        const { user_id, content, product_id, createAt, username } = data;
+        const newComment = new Comments({
+            user_id, content, product_id, createAt, username
+        })
+        await newComment.save();
+
+        io.to(newComment.product_id).emit("sendComment", newComment)
+    })
+    socket.on("replycomment", async (data) => {
+        const { user_id, myname, content, createAt, yourname, id } = data
+        const newReply = { user_id, myname, content, createAt, yourname, id }
+        const comment = await Comments.findById({ _id: id })
+        if (comment) {
+            comment.reply.push({ id, user_id, myname, content, createAt, yourname, reply: [] })
+            await comment.save();
+            io.to(comment.product_id).emit('replyComment', newReply)
+        }
+    })
     socket.on('disconnect', () => {
         console.log(socket.id + ' disconnect');
     })
@@ -43,6 +87,11 @@ io.on("connection", (socket) => {
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors());
+// app.use(function (req, res, next) {
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//     next();
+// });
 app.use(fileUpload({
     useTempFiles: true
 }));
@@ -53,8 +102,8 @@ app.use('/images', upload);
 app.use('/products', product);
 app.use('/checkout', checkout);
 app.use('/payment', payment);
-app.use('/discounts', discount)
-
+app.use('/discounts', discount);
+app.use('/comments', comment);
 
 
 

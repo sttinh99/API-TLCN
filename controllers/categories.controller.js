@@ -37,7 +37,9 @@ module.exports.deleteCategory = async (req, res) => {
             })
         }
         const takeDiscount = await Discount.findOne({ category: nameCategory.name })
-        await Discount.findByIdAndUpdate({ _id: takeDiscount._id }, { isDelete: true })
+        if (takeDiscount) {
+            await Discount.findByIdAndUpdate({ _id: takeDiscount._id }, { isDelete: true })
+        }
         await Category.findByIdAndDelete(req.params.id);
         return res.json({ msg: "deleted a category" });
     } catch (error) {
