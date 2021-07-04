@@ -1,16 +1,11 @@
 const Products = require('../models/products.model')
 const Checkout = require('../models/checkout.model')
-const Discount = require('../models/discount.model')
+const Discount = require('../models/discount.model');
 
 module.exports.getProducts = async (req, res) => {
     try {
-        const feature = new APIfeature(Products.find(), req.query).filtering().sorting();
+        const feature = new APIfeature(Products.find(), req.query).filtering().sorting().paginating();
         const products = await feature.query;
-        // let checkout = await Checkout.find();
-        // let x = checkout.filter((item) => {
-        //     return item.status === false;
-        // })
-        // await console.log(x.length);
         return res.json({
             status: "success",
             result: products.length,
@@ -20,27 +15,32 @@ module.exports.getProducts = async (req, res) => {
         return res.status(500).json({ msg: error })
     }
 }
+module.exports.getAllProducts = async (req, res) => {
+    try {
+        const products = await Products.find()
+        return res.json({
+            status: "success",
+            products: products
+        })
+    } catch (error) {
+        return res.status(500).json({ msg: error })
+    }
+}
 module.exports.createProduct = async (req, res) => {
     try {
-        // console.log(req.body);
         const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
         let discount = 0;
         const takeDiscount = await Discount.findOne({ category: category });
         if (takeDiscount && (new Date(takeDiscount.to) - new Date()) > 0) {
             discount = takeDiscount.discount;
         }
-        // allDiscounts.map((discount) => {
-        //     if (discount.category === category) {
-        //         prices = prices + (prices * discount) / 100
-        //     }
-        // })
         if (!images) return res.status(400).json({ msg: "no images upload" });
         const product = await Products.findOne({ title: title });
         if (prices < 0) return res.status(400).json({ msg: "Form is not format" });
         if (quantity < 0) return res.status(400).json({ msg: "Form is not format" });
         if (product) return res.status(400).json({ msg: "This product already exist" });
         const newProduct = new Products({
-            title: title.toLowerCase(), prices, description, content, images, category, quantity, warranty, brand, discount
+            title: title.toLowerCase(), prices, description, content, images, category: category.toLowerCase(), quantity, warranty, brand, discount
         })
         await newProduct.save();
         res.json({ newProduct });
@@ -72,16 +72,9 @@ module.exports.deleteProduct = async (req, res) => {
         const checkItem = x.find(item => {
             if (item.cart.length > 0) {
                 const x = checkProducts(item.cart, id);
-
-                console.log(x);
                 return x;
             }
         })
-        // let checkProduct = x.find(item => {
-        //     console.log(checkProducts(item.cart, id));
-        //     return checkProducts(item.cart, id);
-        // })
-        // console.log(checkProduct);
         if (checkItem) {
             return res.json({ msg: "Can not delete. Goods are being shipped" });
         }
@@ -93,7 +86,26 @@ module.exports.deleteProduct = async (req, res) => {
         return res.status(500).json({ msg: error })
     }
 }
+module.exports.updateReview = async (req, res) => {
+    try {
+        const { rating } = req.body;
+        if (rating && rating !== 0) {
+            const product = await Products.findOne({ _id: req.params.id })
+            if (!product) {
+                return res.status(400).json({ msg: "not find product" })
+            }
+            let num = product.totalReview
+            let rate = product.rating
+            await Products.findOneAndUpdate({ _id: req.params.id }, {
+                rating: rate + rating, totalReview: num + 1
+            })
+            res.status(200).json({ msg: "update success" })
+        }
 
+    } catch (error) {
+        return res.status(400).json({ msg: error })
+    }
+}
 function checkProducts(arrCart, idProduct) {
     const x = arrCart.find(item => {
         return item._id === idProduct
@@ -108,12 +120,9 @@ class APIfeature {
     }
     filtering() {
         const queryObj = { ...this.queryString } //queryString = req.query
-        //console.log({ before: queryObj });//before delete page...use pagination
         const excludeFields = ['page', 'sort', 'limit'];
-        excludeFields.forEach(el => delete (queryObj[el]));
-        //console.log({ after: queryObj }) //after delete page...
+        excludeFields.forEach(el => delete (queryObj[el])); //after delete page...
         let queryStr = JSON.stringify(queryObj);
-        //console.log({ queryObj, queryStr });
         queryStr = queryStr.replace(/\b(gte|gt|lt|lte|regex)\b/g, match => '$' + match);
         //gte >=
         //gt >

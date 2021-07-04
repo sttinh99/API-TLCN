@@ -104,7 +104,7 @@ module.exports.refreshToken = async (req, res) => {
 module.exports.addCart = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
-        console.log(req.body.cart)
+        //console.log(req.body.cart)
         if (!user) return res.status(400).json({ msg: "User does not exists" });
         await User.findOneAndUpdate({ _id: req.user.id }, { cart: req.body.cart })
         return res.status(200).json("Added to cart");
@@ -113,15 +113,15 @@ module.exports.addCart = async (req, res) => {
     }
 }
 module.exports.getAddress = async (req, res) => {
-    console.log(req.user);
+    //console.log(req.user);
     const user = await User.findById(req.user.id)
     if (!user) return res.status(400).json({ msg: "User does not exists" });
     const address = await User.findById(req.user.id).select('address')
-    console.log(address);
+    //console.log(address);
     res.json({ address })
 }
 module.exports.addAddress = async (req, res) => {
-    console.log(req.body, 'body');
+    //console.log(req.body, 'body');
     try {
         const user = await User.findById(req.user.id)
         if (!user) return res.status(400).json({ msg: "User does not exists" });
@@ -136,7 +136,7 @@ module.exports.addAddress = async (req, res) => {
     }
 }
 module.exports.removeItem = async (req, res) => {
-    console.log(req.body, 'body');
+    //console.log(req.body, 'body');
     try {
         const user = await User.findById(req.user.id)
         if (!user) return res.status(400).json({ msg: "User does not exists" });
@@ -161,7 +161,7 @@ module.exports.forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
         const user = await User.findOne({ email: email })
-        console.log(user);
+        //console.log(user);
         if (!user || user.role === 1) return res.status(400).json({ msg: "this email does not exists" });
         const activationtoken = activationToken({ id: user._id })
         const sendMail = {
@@ -209,12 +209,12 @@ module.exports.changeAccount = async (req, res) => {
 module.exports.changePassword = async (req, res) => {
     try {
         const param = req.params;
-        console.log(param.id, 'xxx');
+        //console.log(param.id, 'xxx');
         const { password, newPassword, confirmPassword } = req.body;
-        console.log(password, newPassword, confirmPassword);
+        //console.log(password, newPassword, confirmPassword);
         const user = await User.findOne({ _id: param.id })
         if (!user) {
-            console.log("xxxx");
+            //console.log("xxxx");
             return res.status(400).json({ msg: "user doesn't exists" });
         }
         const isMatch = await bcrypt.compare(password, user.password);

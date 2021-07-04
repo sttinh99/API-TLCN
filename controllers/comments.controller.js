@@ -8,7 +8,7 @@ module.exports.getComments = async (req, res) => {
         const idProduct = req.params.id;
         const features = new APIfeatures(Comment.find({ product_id: idProduct }), req.query).sorting().paginating();
         const getComments = await features.query
-        console.log(getComments);
+        //console.log(getComments);
         return res.status(200).json({ results: getComments, result: getComments.length })
     } catch (error) {
         return res.status(400).json({ msg: error })

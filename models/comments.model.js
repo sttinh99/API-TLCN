@@ -7,6 +7,10 @@ const commentSchema = new mongoose.Schema({
         trim: true
     },
     product_id: String,
+    rating: {
+        type: Number,
+        default: 0
+    },
     reply: Array,
     username: String
 }, {

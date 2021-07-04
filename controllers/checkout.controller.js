@@ -2,10 +2,12 @@ const Checkout = require('../models/checkout.model');
 const User = require('../models/users.model');
 const Product = require('../models/products.model');
 
-
-
 const sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const fs = require("fs");
+const path = require("path");
+
 module.exports.getCheckout = async (req, res) => {
     try {
         const feature = new APIfeature(Checkout.find(), req.query).sorting();
@@ -24,7 +26,7 @@ module.exports.createCheckout = async (req, res) => {
     const user = await User.findById(req.user.id).select('name email');
     if (!user) return res.status(400).json({ msg: "user does not exists" });
     const { cart, address, payments, deliveryCharges, total } = req.body;
-    console.log(cart);
+    //console.log(cart);
     const { _id, name, email } = user;
     // console.log(cart);
     const newCheckout = new Checkout({
@@ -46,17 +48,34 @@ module.exports.createCheckout = async (req, res) => {
 }
 module.exports.updateCheckout = async (req, res) => {
     try {
+        console.log(req.params);
         const x = await Checkout.findById({ _id: req.params.id });
         await Checkout.findByIdAndUpdate({ _id: req.params.id }, { status: req.body.status });
+        // pathToAttachment = `../../XamCuaTinh/Mailer/${req.params.id}.pdf`;
+        // console.log(pathToAttachment);
+        attachment = fs.readFileSync(path.resolve(__dirname, `../../XamCuaTinh/Mailer/${req.params.id}.pdf`)).toString("base64");
+        console.log(attachment);
+        console.log("success");
         const sendMail = {
             to: x.email,
             from: process.env.MAIL,
             subject: 'You have successfully placed your order',
             text: 'and easy to do anywhere, even with Node.js',
             html: `<p style="color:red">Your order has been confirmed at ${x.updatedAt}</p>
-            <div><p>Discover great service here</p><a='href'>${process.env.CLIENT_URL}/products</a></div>`,
+            <div><p>Discover great service here</p><a='href'>${process.env.CLIENT_URL}/products</a></div>
+            <p>See details at: </p>`,
+            attachments: [
+                {
+                    content: attachment,
+                    filename: `${req.params.id}.pdf`,
+                    type: "application/pdf",
+                    disposition: "attachment"
+                }
+            ]
         };
-        sgMail.send(sendMail);
+        sgMail.send(sendMail).catch(err => {
+            console.log(err);
+        });
         return res.json({ msg: "update a Checkout" });
     } catch (error) {
         return res.status(500).json({ msg: error })

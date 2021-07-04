@@ -20,6 +20,7 @@ const productSchema = new mongoose.Schema({
     },
     description: {
         type: String,
+        default: "",
         require: true
     },
     content: {
@@ -47,6 +48,14 @@ const productSchema = new mongoose.Schema({
         default: 0
     },
     discount: {
+        type: Number,
+        default: 0
+    },
+    rating: {
+        type: Number,
+        default: 0
+    },
+    totalReview: {
         type: Number,
         default: 0
     },

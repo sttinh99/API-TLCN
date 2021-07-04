@@ -15,16 +15,15 @@ router.post('/upload', auth.auth, (req, res) => {
         if (!req.files || Object.keys(req.files).length === 0)
             return res.status(400).json({ msg: "no files were upload" });
         const file = req.files.file;
-        // console.log(file, 'file');
         //console.log(file.size > 1024 * 1024);
-        if (file.size > 3 * 1024 * 1024) {
+        if (file.size > 10 * 1024 * 1024) {
             removeTmp(file.tempFilePath);
             return res.status(400).json({ msg: "size to large" }); //1mb
         }
-        if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png' && file.mimetype !== 'image/webp') {
-            removeTmp(file.tempFilePath);
-            return res.status(400).json({ msg: "File format is incorrect" });
-        }
+        // if (file.mimetype !== 'image/jpeg' && file.mimetype !== 'image/png' && file.mimetype !== 'image/webp') {
+        //     removeTmp(file.tempFilePath);
+        //     return res.status(400).json({ msg: "File format is incorrect" });
+        // }
         cloudinary.v2.uploader.upload(file.tempFilePath, { folder: "upload" }, async (err, result) => {
             if (err) throw err;
             removeTmp(file.tempFilePath);

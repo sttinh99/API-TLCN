@@ -45,25 +45,25 @@ io.on("connection", (socket) => {
         // console.log(socket.adapter.rooms);
     })
     socket.on('test', (data) => {
-        console.log(data);
+        //console.log(data);
     })
     socket.on("client-sent-data", (data) => {
         // console.log(data, 'x1');
         io.sockets.emit("server-sent-data", data.msg);
     })
     socket.on("add-product", (data) => {
-        console.log(data, 'x2');
+        //console.log(data, 'x2');
         io.sockets.emit("add-product", data);
     })
     socket.on("deleteDiscount", (data) => {
-        console.log(data, 'x3');
+        //console.log(data, 'x3');
         io.sockets.emit("deleteDiscount", data);
     })
     socket.on("createcomment", async (data) => {
-        console.log(data);
-        const { user_id, content, product_id, createAt, username } = data;
+        //console.log(data);
+        const { user_id, content, product_id, createAt, username, rating } = data;
         const newComment = new Comments({
-            user_id, content, product_id, createAt, username
+            user_id, content, product_id, createAt, username, rating
         })
         await newComment.save();
 

@@ -17,7 +17,7 @@ module.exports.getPayment = async (req, res) => {
 }
 module.exports.createPayment = async (req, res) => {
     try {
-        console.log(req.body, 'body');
+        //console.log(req.body, 'body');
         const user = await User.findById(req.user.id).select('name email')
         if (!user) return res.status(400).json({ msg: "user does not exists" });
 
