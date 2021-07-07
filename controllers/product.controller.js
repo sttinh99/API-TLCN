@@ -51,8 +51,8 @@ module.exports.createProduct = async (req, res) => {
 }
 module.exports.updateProduct = async (req, res) => {
     try {
-        const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
-
+        const { title, prices, description, content, submit_image, category, quantity, warranty, brand } = req.body;
+        let images=submit_image;
         if (!images) return res.status(400).json({ msg: "no images upload" });
         if (prices < 0) return res.status(400).json({ msg: "Form is not format" });
         if (quantity < 0) return res.status(400).json({ msg: "Form is not format" });
