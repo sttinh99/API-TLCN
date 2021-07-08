@@ -28,8 +28,9 @@ module.exports.getAllProducts = async (req, res) => {
 }
 module.exports.createProduct = async (req, res) => {
     try {
-        const { title, prices, description, content, images, category, quantity, warranty, brand } = req.body;
+        const { title, prices, description, content, submit_image, category, quantity, warranty, brand } = req.body;
         let discount = 0;
+        let images = submit_image;
         const takeDiscount = await Discount.findOne({ category: category });
         if (takeDiscount && (new Date(takeDiscount.to) - new Date()) > 0) {
             discount = takeDiscount.discount;
@@ -61,7 +62,7 @@ module.exports.updateProduct = async (req, res) => {
 
         res.json({ msg: "updated a product" });
     } catch (error) {
-        return res.status(500).json({ msg: error })
+        return res.status(500).json({ msg: "error" })
     }
 }
 module.exports.deleteProduct = async (req, res) => {
