@@ -48,14 +48,14 @@ module.exports.createCheckout = async (req, res) => {
 }
 module.exports.updateCheckout = async (req, res) => {
     try {
-        console.log(req.params);
+        // console.log(req.params);
         const x = await Checkout.findById({ _id: req.params.id });
         await Checkout.findByIdAndUpdate({ _id: req.params.id }, { status: req.body.status });
         // pathToAttachment = `../../XamCuaTinh/Mailer/${req.params.id}.pdf`;
         // console.log(pathToAttachment);
         attachment = fs.readFileSync(path.resolve(__dirname, `../../XamCuaTinh/Mailer/${req.params.id}.pdf`)).toString("base64");
-        console.log(attachment);
-        console.log("success");
+        // console.log(attachment);
+        // console.log("success");
         const sendMail = {
             to: x.email,
             from: process.env.MAIL,
@@ -82,13 +82,9 @@ module.exports.updateCheckout = async (req, res) => {
     }
 }
 module.exports.deleteCheckout = async (req, res) => {
-    // console.log(req.params);
-    // console.log('kkkkkkkkkkk');
     try {
         const x = await Checkout.findById(req.params.id)
-        // console.log(x);
         x.cart.map(async item => {
-            // console.log(item);
             const y = await Product.findOne({ _id: item._id });
             await Product.findOneAndUpdate({ _id: item._id }, {
                 sold: y.sold - item.count,

@@ -26,6 +26,18 @@ module.exports.getAllProducts = async (req, res) => {
         return res.status(500).json({ msg: error })
     }
 }
+module.exports.detailProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log(id);
+        const findProduct = await Products.findOne({ _id: id })
+        console.log(findProduct);
+        if (!findProduct) return res.status(400).json({ msg: "not found product" });
+        return res.json({ findProduct: findProduct })
+    } catch (error) {
+        return res.status(500).json({ msg: "error" })
+    }
+}
 module.exports.createProduct = async (req, res) => {
     try {
         const { title, prices, description, content, submit_image, category, quantity, warranty, brand } = req.body;

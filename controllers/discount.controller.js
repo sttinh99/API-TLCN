@@ -21,12 +21,12 @@ module.exports.getDiscounts = async (req, res) => {
 module.exports.createDiscount = async (req, res) => {
     try {
         const { category, discount } = req.body
-        console.log(req.body.category);
+        // console.log(req.body.category);
         let currentDay = new Date();
         let day = Date.now();
         let deadline;
         const checkDiscount = await Discount.findOne({ category: req.body.category });
-        console.log(checkDiscount, 'checkdiscount');
+        // console.log(checkDiscount, 'checkdiscount');
         if (checkDiscount && checkDiscount.isDelete === false) {
             return req.status(400).json({ msg: "this discount already exists" })
         }
@@ -59,7 +59,7 @@ module.exports.createDiscount = async (req, res) => {
         const newDiscount = new Discount({
             category, discount, from, to
         });
-        console.log(newDiscount);
+        // console.log(newDiscount);
         await newDiscount.save();
         return res.json({ msg: "created a coupoun", newDiscount });
     } catch (error) {
